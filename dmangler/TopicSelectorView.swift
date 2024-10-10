@@ -12,19 +12,18 @@ import SwiftUI
 
 struct TopicSelectorView: View {
   @Bindable var dmangler: Dmangler
-  @Binding var gimmeCount: Int // Gimme count passed as a binding
+  @Binding var  gimmeCount: Int // Gimme count passed as a binding
   
   // Temporary state to handle topic selections
   
   @State private var tempGimmeeCount: Int = 0
-  @State private var tempAvailableColors: [TopicColor] = []
+  @State private var tempActiveColors: [MyColor] = []
+  @State private var tempAvailableColors: [MyColor] = []
   @State private var tempAvailableTopics: [String] = []
-  @State private var tempSelectedTopics: [String: TopicColor] = [:]
+  @State private var tempSelectedTopics: [String: MyColor] = [:]
   @State private var temp: Int = 0  // To restore gimme count on cancel
   
-  
-  
-  
+
   // Alert state
   @State private var showAlert = false
   @State private var showMinimumSelectionAlert = false  // New alert state for minimum selection
@@ -36,7 +35,7 @@ struct TopicSelectorView: View {
     NavigationView {
       VStack {
         // Use the modified TopicIndexView with a binding to tempSelectedTopics
-        TopicIndexView(dmangler: dmangler, selectedTopics: tempSelectedTopics)
+        TopicIndexView(dmangler: dmangler, selectedTopics: $tempSelectedTopics,scheme:$dmangler.currentScheme)
           .frame(height: 100)
           .padding(.top, 8)
         
@@ -88,7 +87,8 @@ struct TopicSelectorView: View {
           cancelSelection()
         },
         trailing: Button("Done") {
-          finalizeSelection()
+          finalizeSelection()//save changes
+          presentationMode.wrappedValue.dismiss()
         }
       )
       .navigationTitle("Select Topics")
@@ -115,8 +115,9 @@ struct TopicSelectorView: View {
     } else {
       
       if let color = tempAvailableColors.randomElement() {
-        print("Add topic \(topic) with color \(color)")
+       // print("Add topic \(topic) with color \(color)")
         tempSelectedTopics[topic] = color
+        tempActiveColors.append(color)
         tempAvailableTopics.removeAll(where: { $0 == topic } )
         tempAvailableColors.removeAll(where: { $0 == color } )
         tempGimmeeCount -= 1
@@ -125,11 +126,12 @@ struct TopicSelectorView: View {
   }
   
   private func removeTopic(_ topic: String) {
-    let color = tempSelectedTopics[topic] ?? TopicColor.myOffBlack
-    print("Remove topic \(topic) with color \(color)")
+    let color = tempSelectedTopics[topic] ?? MyColor.myOffBlack
+   // print("Remove topic \(topic) with color \(color)")
     tempSelectedTopics.removeValue(forKey: topic)
     tempAvailableTopics.append(topic)
     tempAvailableColors.append(color)
+    tempActiveColors.removeAll(where: { $0 == color } )
     tempGimmeeCount -= 1
   }
   
@@ -143,14 +145,17 @@ struct TopicSelectorView: View {
     } else {
       
       gimmeCount = tempGimmeeCount
-      dmangler.availableTopics = tempAvailableTopics
       dmangler.selectedTopics = tempSelectedTopics  // Persist the changes
+      dmangler.activeColors = flattenDictionaryValues(dmangler.selectedTopics)
+      dmangler.availableColors =  removeInstances(from:MyColor.allCases, removing:dmangler.activeColors)
+      dmangler.availableTopics = tempAvailableTopics
       presentationMode.wrappedValue.dismiss()  // Dismiss and save changes
     }
   }
   
   private func setupView() {
     tempGimmeeCount = gimmeCount  // Store the initial gimme count
+    tempActiveColors = dmangler.activeColors
     tempAvailableColors = dmangler.availableColors
     tempAvailableTopics = dmangler.availableTopics
     tempSelectedTopics = dmangler.selectedTopics  // Load the selected topics

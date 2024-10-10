@@ -8,8 +8,39 @@
 // Combined Swift Code: ColorManager with Background and Foreground Colors
 
 import SwiftUI
+struct RGB: Codable {
+    let red: Double
+    let green: Double
+    let blue: Double
+}
+// Function to convert SwiftUI Color to RGB
+func colorToRGB(color: Color) -> RGB {
+    // Convert to UIColor (iOS)
+    let uiColor = UIColor(color)
 
-enum TopicColor: String, CaseIterable, Comparable,Codable {
+    // Extract RGB components
+    var red: CGFloat = 0
+    var green: CGFloat = 0
+    var blue: CGFloat = 0
+    var alpha: CGFloat = 0
+
+    uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+
+    // Return RGB as a struct
+    return RGB(red: Double(red) * 255.0,
+                green: Double(green) * 255.0,
+                blue: Double(blue) * 255.0)
+}
+
+/// Determines the contrasting text color (black or white) for a given background color.
+func contrastingTextColor(for rgb: RGB) -> Color {
+    let luminance = 0.299 * rgb.red + 0.587 * rgb.green + 0.114 * rgb.blue
+    return luminance > 186 ? .black : .white
+}
+func optimalTextColor(for color: Color) -> Color {
+  contrastingTextColor(for: colorToRGB(color: color))
+}
+enum MyColor: Int, CaseIterable, Comparable,Codable {
     // Enum cases synthesized from color names
     case myLightYellow
     case myDeepPink
@@ -83,14 +114,14 @@ enum TopicColor: String, CaseIterable, Comparable,Codable {
     case myDarkGray
     case myWhite
 
-    static func < (lhs: TopicColor, rhs: TopicColor) -> Bool {
+    static func < (lhs: MyColor, rhs: MyColor) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
 }
-
+// this should exactly parallel TopicColor due to rawValue indexing
 struct ColorManager {
     // Static array for background colors
-    static let backgroundColors: [(topic: TopicColor, color: Color, name: String)] = [
+    static let mycolors: [(topic: MyColor, color: Color, name: String)] = [
         (.myLightYellow, Color(red: 255/255, green: 223/255, blue: 0/255), "Light Yellow"),
         (.myDeepPink, Color(red: 255/255, green: 20/255, blue: 147/255), "Deep Pink"),
         (.myLightBlue, Color(red: 65/255, green: 105/255, blue: 225/255), "Light Blue"),
@@ -134,10 +165,10 @@ struct ColorManager {
         (.myOffBlack, Color(red: 0.1, green: 0.1, blue: 0.1),"Off Black"),
         (.myOffWhite, Color(red: 0.95, green: 0.95, blue: 0.95),"Off White"),
  
-    ]
+   
 
     // Static array for foreground colors
-    static let foregroundColors: [(topic: TopicColor, color: Color, name: String)] = [
+  
         (.myGold, Color(red: 255/255, green: 223/255, blue: 0/255), "Gold"),
         (.myHotPink, Color(red: 255/255, green: 20/255, blue: 147/255), "Hot Pink"),
         (.myRoyalBlue, Color(red: 65/255, green: 105/255, blue: 225/255), "Royal Blue"),
@@ -167,57 +198,67 @@ struct ColorManager {
     ]
 
     // Function to retrieve a background color for a TopicColor
-    static func backgroundColor(for topicColor: TopicColor) -> Color {
-        return backgroundColors.first(where: { $0.topic == topicColor })?.color ?? Color.clear
+    static func backgroundColor(for topicColor: MyColor) -> Color {
+        return mycolors.first(where: { $0.topic == topicColor })?.color ?? Color.clear
     }
     
-    // Function to retrieve a foreground color for a TopicColor
-    static func foregroundColor(for topicColor: TopicColor) -> Color {
-        return foregroundColors.first(where: { $0.topic == topicColor })?.color ?? Color.clear
-    }
-    
+ 
     // Get all available colors as enum values
-    static func getAllColors() -> [TopicColor] {
-        return TopicColor.allCases
+    static func getAllColors() -> [MyColor] {
+        return MyColor.allCases
     }
 }
 
-let scheme0Colors: [TopicColor] = [
+let scheme0Colors: [MyColor] = [
     .myBlack, .myBlack, .myBlack, .myBlack, .myBlack,
     .myBlack, .myBlack, .myBlack, .myBlack, .myBlack,
     .myOffWhite, .myOffBlack
 ]
 
-let scheme1Colors: [TopicColor] = [
+let scheme1Colors: [MyColor] = [
     .myIceBlue, .myMidnightBlue, .myFrost, .mySlate, .mySilver,
     .myPine, .myBerry, .myEvergreen, .myStorm, .myHolly,
     .myOffWhite, .myOffBlack
 ]
 
-let scheme2Colors: [TopicColor] = [
+let scheme2Colors: [MyColor] = [
     .myLightYellow, .myDeepPink, .myLightBlue, .myPeach, .myLavender,
     .myMint, .myLightCoral, .myAqua, .myLemon, .mySkyBlue,
     .myOffWhite, .myOffBlack
 ]
 
-let scheme3Colors: [TopicColor] = [
+let scheme3Colors: [MyColor] = [
     .mySkyBlue, .mySunshineYellow, .myOceanBlue, .mySeafoam, .myPalmGreen,
     .myCoral, .myLagoon, .myShell, .myCoconut, .myPineapple,
     .myOffWhite, .myOffBlack
 ]
 
-let scheme4Colors: [TopicColor] = [
+let scheme4Colors: [MyColor] = [
     .myBurntOrange, .myGoldenYellow, .myCrimsonRed, .myPumpkin, .myChestnut,
     .myHarvestGold, .myAmber, .myMaroon, .myRusset, .myMossGreen,
     .myOffWhite, .myOffBlack
 ]
-let allColorSchemes: [[TopicColor]] = [
+let allColorSchemes: [[MyColor]] = [
   scheme0Colors, scheme1Colors, scheme2Colors, scheme3Colors, scheme4Colors
 ]
-func allColorsForScheme(_ schmindx: Int) -> [TopicColor] {
+func allColorsForScheme(_ schmindx: Int) -> [MyColor] {
   return allColorSchemes[schmindx]
 }
-func colorForSchemeAndTopic(scheme schmindx: Int, index topicIndex: Int) -> TopicColor {
+func colorForSchemeAndTopic(scheme schmindx: Int, index topicIndex: Int) -> MyColor {
     let theScheme = allColorSchemes[schmindx]
     return theScheme[topicIndex]
 }
+ func reworkTopics(topics:[String:MyColor],fromscheme:Int, toscheme:Int) -> [String:MyColor] {
+  return topics.mapValues { mycolor  in
+    //find position in "fromscheme"
+    guard let  posfrom = allColorSchemes[fromscheme].firstIndex(of: mycolor) else { return MyColor.myOffBlack}
+    // find color in same position in "toscheme" and return it
+    guard posfrom >= 0 && posfrom < allColorSchemes[toscheme].count
+    else { return MyColor.myOffBlack
+    }
+    let  newColor = allColorSchemes[toscheme][posfrom]
+    return newColor
+  }
+}
+  
+   
