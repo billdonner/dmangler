@@ -14,7 +14,7 @@ import SwiftUI
 let test_allTopics = ["Topic1", "Topic2", "Topic3", "Topic4", "Topic5", "Topic6", "Topic7", "Topic8", "Topic9", "Topic10","Topic11","Topic12","Topic13","Topic14","Topic15","Topic16","Topic17","Topic18","Topic19","Topic20"]
 let test_allCounts = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 let test_scheme = 1
-let test_selected:[String:MyColor] = ["Topic1":.myIceBlue]
+let test_selected:[String:FreeportColor] = ["Topic1":.myIceBlue]
 
 
 struct ContentView: View {
@@ -62,7 +62,7 @@ struct ContentView: View {
       
            dumpTopicsAndColors("changing scheme from \(older) to \(newer), this is the old state",from: dmangler.selectedTopics)
       
-      dmangler.selectedTopics = reworkTopics(topics:  dmangler.selectedTopics,fromscheme: older,toscheme: newer)
+      dmangler.selectedTopics = reworkColors(topics:  dmangler.selectedTopics,fromscheme: older,toscheme: newer)
       dmangler.currentScheme = newer
       
            dumpTopicsAndColors("after changing scheme from \(older) to \(newer), this is the new state",from: dmangler.selectedTopics)

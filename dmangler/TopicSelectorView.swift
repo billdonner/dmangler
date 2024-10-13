@@ -11,7 +11,7 @@ import SwiftUI
 let minTopicCount = 3
 let maxTopicCount = 10
 
-func dumpTopicsAndColors(_ comment:String,from selectedTopics:[String:MyColor]) {
+func dumpTopicsAndColors(_ comment:String,from selectedTopics:[String:FreeportColor]) {
   print("---> \(comment)")
   for (topic, color) in selectedTopics {
     print("\(topic) : \(color)")
@@ -28,7 +28,7 @@ struct TopicSelectorView: View {
  // @State private var tempActiveColors: [MyColor] = []
  // @State private var tempAvailableColors: [MyColor] = []
  // @State private var tempAvailableTopics: [String] = []
-  @State private var tempSelectedTopics: [String: MyColor] = [:]
+  @State private var tempSelectedTopics: [String: FreeportColor] = [:]
   
 
   // Alert state

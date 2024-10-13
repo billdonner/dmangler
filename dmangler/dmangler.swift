@@ -26,7 +26,7 @@ func removeInstances<T: Equatable>(from array: [T], removing elements: [T]) -> [
 class Dmangler  {
  init(currentScheme: Int, allCounts: [Int] = [],
                 allTopics: [String] = [],
-                selectedTopics: [String : MyColor] = [:]
+                selectedTopics: [String : FreeportColor] = [:]
   ) {
     self.currentScheme = currentScheme
     self.allCounts = allCounts
@@ -36,18 +36,18 @@ class Dmangler  {
   
   var allCounts: [Int] = []  // Count for each topic
   var allTopics: [String] = []  // All possible topics
-  var selectedTopics: [String: MyColor] = [:]  // Selected topics with color
+  var selectedTopics: [String: FreeportColor] = [:]  // Selected topics with color
   var currentScheme :Int
 
   func changeScheme(from older: Int, to newer: Int){
-    selectedTopics = reworkTopics(topics:  selectedTopics,fromscheme: older,toscheme: newer)
+    selectedTopics = reworkColors(topics:  selectedTopics,fromscheme: older,toscheme: newer)
     currentScheme = newer
   }
-  func load_data(scheme:Int, topics: [String], counts: [Int], selected: [String:MyColor])->Self{
-currentScheme = scheme
+  func load_data(scheme:Int, topics: [String], counts: [Int], selected: [String:FreeportColor])->Self{
+    currentScheme = scheme
     allCounts = counts
     allTopics = topics
- selectedTopics = selected// Mapping topics to TopicColor enum
+    selectedTopics = selected// Mapping topics to TopicColor enum
     return self
      
   }

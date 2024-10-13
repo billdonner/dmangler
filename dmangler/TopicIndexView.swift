@@ -11,7 +11,7 @@ import SwiftUI
 struct TopicIndexView: View {
   @Bindable var dmangler:Dmangler
     // Binding to the temporary selected topics
-  @Binding var  selectedTopics: [String: MyColor]
+  @Binding var  selectedTopics: [String: FreeportColor]
 
   @Environment(\.colorScheme) var cs //system light/dark
     var body: some View {
@@ -56,7 +56,7 @@ struct TopicIndexView_Previews: PreviewProvider {
     static var previews: some View {
      
         // Example selected topics
-@State var  selectedTopics:[String:MyColor] = [
+@State var  selectedTopics:[String:FreeportColor] = [
           "Topic1": .myNavy,
           "Topic2": .myAqua,
           "Topic3": .myMossGreen,
