@@ -11,29 +11,20 @@ import SwiftUI
   ContentView()
 }
 
-func load_Dmangler(_ dmangler: Dmangler) -> Dmangler {
-  dmangler.setScheme(1)
-  dmangler.allTopics = ["Topic1", "Topic2", "Topic3", "Topic4", "Topic5", "Topic6", "Topic7", "Topic8", "Topic9", "Topic10","Topic11","Topic12","Topic13","Topic14","Topic15","Topic16","Topic17","Topic18","Topic19","Topic20"]
-  dmangler.allCounts = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
-  dmangler.selectedTopics = ["Topic1":.myPine] // Mapping topics to TopicColor enum
-  dmangler.availableTopics = removeInstances(from: dmangler.allTopics, removing: flattenDictionaryKeys(dmangler.selectedTopics))
-  dmangler.activeColors = flattenDictionaryValues(dmangler.selectedTopics)
-  dmangler.availableColors =  removeInstances(from:MyColor.allCases, removing:dmangler.activeColors)
-  return dmangler
-}
+let test_allTopics = ["Topic1", "Topic2", "Topic3", "Topic4", "Topic5", "Topic6", "Topic7", "Topic8", "Topic9", "Topic10","Topic11","Topic12","Topic13","Topic14","Topic15","Topic16","Topic17","Topic18","Topic19","Topic20"]
+let test_allCounts = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
+let test_scheme = 1
+let test_selected:[String:MyColor] = ["Topic1":.myIceBlue]
+
 
 struct ContentView: View {
   @State private var showTopicSelector = false
   @State private var gimmeCount: Int = 5  // Example gimme count
-  @State private var selectedScheme = 1  // Default to Scheme 1
+  @State private var selectedScheme = test_scheme // Default to Scheme 1
   
-  @State var dmangler = Dmangler.shared
+  @State var dmangler = Dmangler(currentScheme:   test_scheme, allCounts: test_allCounts, allTopics: test_allTopics  )
   
-  // Schemes
-  let colorSchemes: [[MyColor]] = [
-    scheme0Colors, scheme1Colors, scheme2Colors, scheme3Colors, scheme4Colors
-  ]
-  
+
   var body: some View {
     VStack(spacing: 50) {
       // Inline picker to select a scheme
@@ -53,7 +44,7 @@ struct ContentView: View {
         .padding()
       
       // Pass selected scheme to TopicIndexView
-      TopicIndexView(dmangler: dmangler, selectedTopics: $dmangler.selectedTopics,scheme: $dmangler.currentScheme)
+      TopicIndexView(dmangler: dmangler, selectedTopics: $dmangler.selectedTopics)
       
       Button("Select Topics") {
         showTopicSelector = true
@@ -62,19 +53,27 @@ struct ContentView: View {
       Button("Add 5 gimmees") {
         gimmeCount += 5
       }
+      
+      Button("Wipe out Gimmees") {
+        gimmeCount = 0
+      }
     }
     .onChange( of: selectedScheme) { older,newer in
-      dmangler.selectedTopics = reworkTopics(topics: dmangler.selectedTopics,fromscheme: older,toscheme: newer)
-      // change schemes, change the active colors
-      let activeColorCount = dmangler.activeColors.count
-       dmangler.setScheme(newer)
-      dmangler.availableColors = Array(allColorsForScheme(newer).dropFirst(activeColorCount))
-      dmangler.activeColors = Array(allColorsForScheme(newer).prefix(activeColorCount))//(activeColorCount) ?? [])
-    // print("changed to scheme \(newer) active colors are \(dmangler.activeColors)")
-      //dmangler.refreshAvailableColors()
+      
+           dumpTopicsAndColors("changing scheme from \(older) to \(newer), this is the old state",from: dmangler.selectedTopics)
+      
+      dmangler.selectedTopics = reworkTopics(topics:  dmangler.selectedTopics,fromscheme: older,toscheme: newer)
+      dmangler.currentScheme = newer
+      
+           dumpTopicsAndColors("after changing scheme from \(older) to \(newer), this is the new state",from: dmangler.selectedTopics)
+ 
     }
     .onAppear {
-      let _ = load_Dmangler(dmangler)
+      let _ = dmangler.load_data(scheme:1,topics:test_allTopics,
+                         counts:test_allCounts,
+                         selected:test_selected )
+    
+      dumpTopicsAndColors("onAppear loading data",  from: dmangler.selectedTopics )
     }
     .fullScreenCover(isPresented: $showTopicSelector) {
       // Pass selected scheme to TopicSelectorView
@@ -82,4 +81,5 @@ struct ContentView: View {
     }
   }
 }
+
 

@@ -84,20 +84,30 @@ enum MyColor: Int, CaseIterable, Comparable,Codable {
     case myEvergreen
     case myStorm
     case myHolly
-    case myBlack
-  
+    case myBlack0
+  case myBlack1
+  case myBlack2
+  case myBlack3
+  case myBlack4
+  case myBlack5
+  case myBlack6
+  case myBlack7
+  case myBlack8
+  case myBlack9
+  case myBlackA
+  case myBlackB
   case myOffWhite
   case myOffBlack
     // Foreground enum cases
     case myGold
-    case myHotPink
+    case myHotPink//not used in any scheme right now
     case myDarkOrange
     case myDarkViolet
     case myDarkGreen
     case myCrimson
     case myTeal
     case myNavy
-    case myGoldenrod
+    case myGoldenrod//not used in any scheme right now
     case myForestGreen
     case myDeepTeal
     case myChocolate
@@ -161,7 +171,18 @@ struct ColorManager {
         (.myEvergreen, Color(red: 0/255, green: 100/255, blue: 0/255), "Evergreen"),
         (.myStorm, Color(red: 119/255, green: 136/255, blue: 153/255), "Storm"),
         (.myHolly, Color(red: 0/255, green: 128/255, blue: 0/255), "Holly"),
-        (.myBlack, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack0, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack1, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack2, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack3, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack4, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack5, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack6, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack7, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack8, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlack9, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlackA, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
+        (.myBlackB, Color(red: 0/255, green: 0/255, blue: 0/255), "Black"),
         (.myOffBlack, Color(red: 0.1, green: 0.1, blue: 0.1),"Off Black"),
         (.myOffWhite, Color(red: 0.95, green: 0.95, blue: 0.95),"Off White"),
  
@@ -210,9 +231,9 @@ struct ColorManager {
 }
 
 let scheme0Colors: [MyColor] = [
-    .myBlack, .myBlack, .myBlack, .myBlack, .myBlack,
-    .myBlack, .myBlack, .myBlack, .myBlack, .myBlack,
-    .myOffWhite, .myOffBlack
+    .myBlack0, .myBlack1, .myBlack2, .myBlack3, .myBlack4,
+    .myBlack5, .myBlack6, .myBlack7, .myBlack8, .myBlack9,  
+      .myBlackA,.myBlackB
 ]
 
 let scheme1Colors: [MyColor] = [
@@ -248,15 +269,33 @@ func colorForSchemeAndTopic(scheme schmindx: Int, index topicIndex: Int) -> MyCo
     let theScheme = allColorSchemes[schmindx]
     return theScheme[topicIndex]
 }
+func availableColorsForScheme (_ schmindx: Int) -> [MyColor] {
+  return allColorSchemes[schmindx]
+}
+/**
+ Rework the basic topics->mycolor dict from one scheme to another, each topic is separately processed
+ 
+ - get the current color for the topic as specified in in dict as its value ;
+ -  lookup the color in the scheme's list of MyColors, obtaining its index or fail
+ - find corresponding color for the new/to scheme
+ - use that for topic's value
+ 
+ */
  func reworkTopics(topics:[String:MyColor],fromscheme:Int, toscheme:Int) -> [String:MyColor] {
+   print("Reworking topics from scheme \(fromscheme) to scheme \(toscheme)")
   return topics.mapValues { mycolor  in
     //find position in "fromscheme"
-    guard let  posfrom = allColorSchemes[fromscheme].firstIndex(of: mycolor) else { return MyColor.myOffBlack}
+    guard let  posfrom = allColorSchemes[fromscheme].firstIndex(of: mycolor) else {
+      print("did not find \(mycolor) in scheme \(fromscheme)")
+      return MyColor.myHotPink}
+    
+    print("found index of \(mycolor) in scheme \(fromscheme) at \(posfrom)")
     // find color in same position in "toscheme" and return it
     guard posfrom >= 0 && posfrom < allColorSchemes[toscheme].count
-    else { return MyColor.myOffBlack
+    else { return MyColor.myGoldenrod
     }
     let  newColor = allColorSchemes[toscheme][posfrom]
+     print("transformed to \(newColor) in scheme \(toscheme)")
     return newColor
   }
 }

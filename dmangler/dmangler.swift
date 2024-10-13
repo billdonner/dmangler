@@ -24,57 +24,31 @@ func removeInstances<T: Equatable>(from array: [T], removing elements: [T]) -> [
 
 @Observable
 class Dmangler  {
-  internal init(allCounts: [Int] = [], allTopics: [String] = [], availableTopics: [String] = [], selectedTopics: [String : MyColor] = [:], activeColors: [MyColor] = [], availableColors: [MyColor] = []) {
+ init(currentScheme: Int, allCounts: [Int] = [],
+                allTopics: [String] = [],
+                selectedTopics: [String : MyColor] = [:]
+  ) {
+    self.currentScheme = currentScheme
     self.allCounts = allCounts
     self.allTopics = allTopics
-    self.availableTopics = availableTopics
-    self.selectedTopics = selectedTopics
-    self.activeColors = activeColors
-    self.availableColors = availableColors
+    self.selectedTopics = selectedTopics 
   }
   
   var allCounts: [Int] = []  // Count for each topic
   var allTopics: [String] = []  // All possible topics
-  var availableTopics: [String] = []  // Topics currently available for selection
-  
   var selectedTopics: [String: MyColor] = [:]  // Selected topics with color
-  var activeColors: [MyColor] = []  
-  var availableColors: [MyColor] = []//TopicColor.allCases  // All available colors
-  
-  var currentScheme :Int = 1
-  
-  static let shared = Dmangler()
-  
-  func setScheme(_ scheme: Int) {
-    currentScheme = scheme  
-  }
-//  // Setup initial selected topics with unique colors
-//  func setupInitialSelectedTopics() {
-//    // Example of pre-selected topics
-//    let initiallySelectedTopics = ["Topic1", "Topic2", "Topic3"]
-//    
-//    for topic in initiallySelectedTopics {
-//      if let color = availableColors.randomElement() {
-//        selectedTopics[topic] = color
-//        availableColors.removeAll { $0 == color }  // Remove the assigned color from availableColors
-//      }
-//    }
-//    updateAvailableTopics()
-//  }
-//  func setAvailableColors(_ colors: [MyColor]) {
-//    availableColors = colors
-//  }
+  var currentScheme :Int
 
-//  // Refresh available colors to avoid duplicates
-//  func refreshAvailableColors() {
-//    availableColors = MyColor.allCases.filter { color in
-//      !selectedTopics.values.contains(color)
-//    }
-//  }
-  
-  // Update available topics to exclude selected ones
-//  func updateAvailableTopics() {
-//    availableTopics = allTopics.filter { !selectedTopics.keys.contains($0) }
-//  }
-//  
+  func changeScheme(from older: Int, to newer: Int){
+    selectedTopics = reworkTopics(topics:  selectedTopics,fromscheme: older,toscheme: newer)
+    currentScheme = newer
+  }
+  func load_data(scheme:Int, topics: [String], counts: [Int], selected: [String:MyColor])->Self{
+currentScheme = scheme
+    allCounts = counts
+    allTopics = topics
+ selectedTopics = selected// Mapping topics to TopicColor enum
+    return self
+     
+  }
 }

@@ -8,7 +8,15 @@
 
 import SwiftUI
 
-import SwiftUI
+let minTopicCount = 3
+let maxTopicCount = 10
+
+func dumpTopicsAndColors(_ comment:String,from selectedTopics:[String:MyColor]) {
+  print("---> \(comment)")
+  for (topic, color) in selectedTopics {
+    print("\(topic) : \(color)")
+  }
+}
 
 struct TopicSelectorView: View {
   @Bindable var dmangler: Dmangler
@@ -17,15 +25,14 @@ struct TopicSelectorView: View {
   // Temporary state to handle topic selections
   
   @State private var tempGimmeeCount: Int = 0
-  @State private var tempActiveColors: [MyColor] = []
-  @State private var tempAvailableColors: [MyColor] = []
-  @State private var tempAvailableTopics: [String] = []
+ // @State private var tempActiveColors: [MyColor] = []
+ // @State private var tempAvailableColors: [MyColor] = []
+ // @State private var tempAvailableTopics: [String] = []
   @State private var tempSelectedTopics: [String: MyColor] = [:]
-  @State private var temp: Int = 0  // To restore gimme count on cancel
   
 
   // Alert state
-  @State private var showAlert = false
+  @State private var showNoGimmeeAlert = false
   @State private var showMinimumSelectionAlert = false  // New alert state for minimum selection
   @State private var showMaximumSelectionAlert = false  // New alert state for maximum selection
   
@@ -35,13 +42,13 @@ struct TopicSelectorView: View {
     NavigationView {
       VStack {
         // Use the modified TopicIndexView with a binding to tempSelectedTopics
-        TopicIndexView(dmangler: dmangler, selectedTopics: $tempSelectedTopics,scheme:$dmangler.currentScheme)
+        TopicIndexView(dmangler: dmangler, selectedTopics: $tempSelectedTopics)
           .frame(height: 100)
           .padding(.top, 8)
         
         // Gimme count display at the top
         Text("Gimmees: \(tempGimmeeCount)")
-          .font(.caption)
+          .font(tempGimmeeCount <= 0 ? .title : .body)
           .foregroundColor(.secondary)
           .padding(.top, 8)
         
@@ -59,7 +66,7 @@ struct TopicSelectorView: View {
                   Button("Remove?") {
                     removeTopic(topic)
                   }
-                  .disabled(tempGimmeeCount <= 0)  // Disable if gimme count is zero or less
+                 // .disabled(tempGimmeeCount <= 0)  // Disable if gimme count is zero or less
                 }
               }
             }
@@ -69,6 +76,7 @@ struct TopicSelectorView: View {
         // List of available topics
         List {
           Section(header: Text("Available Topics")) {
+            let tempAvailableTopics = removeInstances(from:  dmangler.allTopics, removing: flattenDictionaryKeys( tempSelectedTopics))
             ForEach(tempAvailableTopics, id: \.self) { topic in
               HStack {
                 Text(topic)
@@ -76,7 +84,7 @@ struct TopicSelectorView: View {
                 Button("Add?") {
                   addTopic(topic)
                 }
-                .disabled(tempGimmeeCount <= 0)  // Disable if gimme count is zero or less
+               // .disabled(tempGimmeeCount <= 0)  // Disable if gimme count is zero or less
               }
             }
           }
@@ -84,25 +92,43 @@ struct TopicSelectorView: View {
       }
       .navigationBarItems(
         leading: Button("Cancel") {
+          print("Cancelling selection")
           cancelSelection()
         },
         trailing: Button("Done") {
+          print("Finalizing selection")
           finalizeSelection()//save changes
-          presentationMode.wrappedValue.dismiss()
+          if !showMinimumSelectionAlert {
+            presentationMode.wrappedValue.dismiss()
+          }
         }
       )
       .navigationTitle("Select Topics")
       .onAppear {
         setupView()
       }
-      .alert(isPresented: $showAlert) {
-        Alert(title: Text("No Gimmees"), message: Text("You have no gimmees left to add or remove topics."), dismissButton: .default(Text("OK")))
-      }
-      .alert(isPresented: $showMinimumSelectionAlert) {
-        Alert(title: Text("Selection Required"), message: Text("Please select at least 3 topics."), dismissButton: .default(Text("OK")))
-      }
-      .alert(isPresented: $showMaximumSelectionAlert) {
-        Alert(title: Text("Maximum Reached"), message: Text("You cannot select more than 10 topics."), dismissButton: .default(Text("OK")))
+
+      
+      .alert(isPresented: Binding<Bool>(
+          get: {
+              showMinimumSelectionAlert || showMaximumSelectionAlert || showNoGimmeeAlert
+          },
+          set: { _ in
+              // Reset all alerts when dismissed
+              showMinimumSelectionAlert = false
+              showMaximumSelectionAlert = false
+              showNoGimmeeAlert = false
+          }
+      )) {
+          if showMinimumSelectionAlert {
+              return Alert(title: Text("Selection Required"), message: Text("Please select at least \(minTopicCount) topics."), dismissButton: .default(Text("OK")))
+          } else if showMaximumSelectionAlert {
+              return Alert(title: Text("Maximum Reached"), message: Text("You cannot select more than \(maxTopicCount) topics."), dismissButton: .default(Text("OK")))
+          } else if showNoGimmeeAlert {
+              return Alert(title: Text("No Gimmees"), message: Text("You have no gimmees left to add or remove topics."), dismissButton: .default(Text("OK")))
+          } else {
+              return Alert(title: Text("Unknown"), message: Text("An unknown alert was triggered."), dismissButton: .default(Text("OK")))
+          }
       }
     }
   }
@@ -110,57 +136,65 @@ struct TopicSelectorView: View {
   // MARK: - Action Methods
   
   private func addTopic(_ topic: String) {
-    if tempSelectedTopics.count >= 10 {
+    if tempGimmeeCount <= 0 {
+      showNoGimmeeAlert = true
+    } else
+    if tempSelectedTopics.count >= maxTopicCount {
       showMaximumSelectionAlert = true
     } else {
-      
-      if let color = tempAvailableColors.randomElement() {
-       // print("Add topic \(topic) with color \(color)")
-        tempSelectedTopics[topic] = color
-        tempActiveColors.append(color)
-        tempAvailableTopics.removeAll(where: { $0 == topic } )
-        tempAvailableColors.removeAll(where: { $0 == color } )
+      let active = flattenDictionaryValues(tempSelectedTopics)
+      let avail = removeInstances(from: availableColorsForScheme(dmangler.currentScheme), removing: active)
+      guard  let color = avail.randomElement()  else {
+        print("Could not get random Color for scheme \(dmangler.currentScheme) in addtopic")
+        return}
+      // print("Add topic \(topic) with color \(color)")
+       tempSelectedTopics[topic] = color
         tempGimmeeCount -= 1
-      }
+       dumpTopicsAndColors("added topic \(topic) with color \(color) scheme \(dmangler.currentScheme)",from:tempSelectedTopics)
+ 
     }
   }
   
   private func removeTopic(_ topic: String) {
-    let color = tempSelectedTopics[topic] ?? MyColor.myOffBlack
-   // print("Remove topic \(topic) with color \(color)")
-    tempSelectedTopics.removeValue(forKey: topic)
-    tempAvailableTopics.append(topic)
-    tempAvailableColors.append(color)
-    tempActiveColors.removeAll(where: { $0 == color } )
-    tempGimmeeCount -= 1
+    if tempGimmeeCount <= 0 {
+      showNoGimmeeAlert = true
+    } else {
+      guard  let color = tempSelectedTopics[topic] else {
+        print("Could not get color for \(topic) in removetopic")
+        return
+      }
+      // print("Remove topic \(topic) with color \(color)")
+      tempSelectedTopics.removeValue(forKey: topic)
+      tempGimmeeCount -= 1
+      dumpTopicsAndColors("removed topic \(topic) with color \(color) scheme \(dmangler.currentScheme)",from:tempSelectedTopics)
+    }
   }
-  
   private func cancelSelection() {  // Restore the initial gimme count
     presentationMode.wrappedValue.dismiss()  // Dismiss without saving changes
   }
   
+
+  
+  
   private func finalizeSelection() {
-    if tempSelectedTopics.count < 3 {
+    if tempSelectedTopics.count < minTopicCount {
       showMinimumSelectionAlert = true
     } else {
       
       gimmeCount = tempGimmeeCount
       dmangler.selectedTopics = tempSelectedTopics  // Persist the changes
-      dmangler.activeColors = flattenDictionaryValues(dmangler.selectedTopics)
-      dmangler.availableColors =  removeInstances(from:MyColor.allCases, removing:dmangler.activeColors)
-      dmangler.availableTopics = tempAvailableTopics
+
+      dumpTopicsAndColors("finalized selection for scheme \(dmangler.currentScheme)", from: dmangler.selectedTopics)
       presentationMode.wrappedValue.dismiss()  // Dismiss and save changes
     }
   }
   
   private func setupView() {
     tempGimmeeCount = gimmeCount  // Store the initial gimme count
-    tempActiveColors = dmangler.activeColors
-    tempAvailableColors = dmangler.availableColors
-    tempAvailableTopics = dmangler.availableTopics
     tempSelectedTopics = dmangler.selectedTopics  // Load the selected topics
+    dumpTopicsAndColors("setup view for scheme \(dmangler.currentScheme)", from: dmangler.selectedTopics)
     if tempGimmeeCount <= 0 {
-      showAlert = true
+      showNoGimmeeAlert = true
     }
   }
 }
@@ -168,7 +202,7 @@ struct TopicSelectorView_Previews: PreviewProvider {
   @State static private var gimmeCount: Int = 5  // Example gimme count
   
   static var previews: some View {
-    let dmangler = load_Dmangler(Dmangler.shared)
+    let dmangler = Dmangler(currentScheme:test_scheme,allCounts:test_allCounts,allTopics:test_allTopics,selectedTopics:test_selected)
     
     
     return TopicSelectorView(dmangler: dmangler, gimmeCount: $gimmeCount)
