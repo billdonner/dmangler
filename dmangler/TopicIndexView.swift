@@ -27,14 +27,6 @@ struct TopicIndexView: View {
                     VStack(spacing:0) {
                       let pct = Double(dmangler.allCounts[topicidx]) / 200.0// for now Double(dmangler.allCounts.max()!)
                       let backColor = ColorManager.backgroundColor(for: colorEnum)
-//                      ZStack{
-//                        Circle()
-//                          .fill(backColor)  // Use enum to get Color
-//                          .frame(width: 70, height: 50)
-//                        Text("\(dmangler.allCounts[topicidx])")
-//                          .font(.body)
-//                          .foregroundColor(optimalTextColor(for: backColor))
-//                      }
                       
                       HighWaterMarkCircleView(text:"\(dmangler.allCounts[topicidx])", percentage: pct,
                                               size: 50, color: backColor)

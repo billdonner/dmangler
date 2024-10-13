@@ -25,9 +25,6 @@ struct TopicSelectorView: View {
   // Temporary state to handle topic selections
   
   @State private var tempGimmeeCount: Int = 0
- // @State private var tempActiveColors: [MyColor] = []
- // @State private var tempAvailableColors: [MyColor] = []
- // @State private var tempAvailableTopics: [String] = []
   @State private var tempSelectedTopics: [String: FreeportColor] = [:]
   
 
@@ -97,7 +94,7 @@ struct TopicSelectorView: View {
         },
         trailing: Button("Done") {
           print("Finalizing selection")
-          finalizeSelection()//save changes
+          finalizeSelection()//save changes, sets bool below
           if !showMinimumSelectionAlert {
             presentationMode.wrappedValue.dismiss()
           }
