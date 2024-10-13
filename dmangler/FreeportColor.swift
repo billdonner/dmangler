@@ -40,7 +40,7 @@ func contrastingTextColor(for rgb: RGB) -> Color {
 func optimalTextColor(for color: Color) -> Color {
   contrastingTextColor(for: colorToRGB(color: color))
 }
-enum MyColor: Int, CaseIterable, Comparable,Codable {
+enum FreeportColor: Int, CaseIterable, Comparable,Codable {
     // Enum cases synthesized from color names
     case myLightYellow
     case myDeepPink
@@ -124,14 +124,14 @@ enum MyColor: Int, CaseIterable, Comparable,Codable {
     case myDarkGray
     case myWhite
 
-    static func < (lhs: MyColor, rhs: MyColor) -> Bool {
+    static func < (lhs: FreeportColor, rhs: FreeportColor) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
 }
 // this should exactly parallel TopicColor due to rawValue indexing
 struct ColorManager {
     // Static array for background colors
-    static let mycolors: [(topic: MyColor, color: Color, name: String)] = [
+    static let mycolors: [(topic: FreeportColor, color: Color, name: String)] = [
         (.myLightYellow, Color(red: 255/255, green: 223/255, blue: 0/255), "Light Yellow"),
         (.myDeepPink, Color(red: 255/255, green: 20/255, blue: 147/255), "Deep Pink"),
         (.myLightBlue, Color(red: 65/255, green: 105/255, blue: 225/255), "Light Blue"),
@@ -219,57 +219,57 @@ struct ColorManager {
     ]
 
     // Function to retrieve a background color for a TopicColor
-    static func backgroundColor(for topicColor: MyColor) -> Color {
+    static func backgroundColor(for topicColor: FreeportColor) -> Color {
         return mycolors.first(where: { $0.topic == topicColor })?.color ?? Color.clear
     }
     
  
     // Get all available colors as enum values
-    static func getAllColors() -> [MyColor] {
-        return MyColor.allCases
+    static func getAllColors() -> [FreeportColor] {
+        return FreeportColor.allCases
     }
 }
 
-let scheme0Colors: [MyColor] = [
+let scheme0Colors: [FreeportColor] = [
     .myBlack0, .myBlack1, .myBlack2, .myBlack3, .myBlack4,
     .myBlack5, .myBlack6, .myBlack7, .myBlack8, .myBlack9,  
       .myBlackA,.myBlackB
 ]
 
-let scheme1Colors: [MyColor] = [
+let scheme1Colors: [FreeportColor] = [
     .myIceBlue, .myMidnightBlue, .myFrost, .mySlate, .mySilver,
     .myPine, .myBerry, .myEvergreen, .myStorm, .myHolly,
     .myOffWhite, .myOffBlack
 ]
 
-let scheme2Colors: [MyColor] = [
+let scheme2Colors: [FreeportColor] = [
     .myLightYellow, .myDeepPink, .myLightBlue, .myPeach, .myLavender,
     .myMint, .myLightCoral, .myAqua, .myLemon, .mySkyBlue,
     .myOffWhite, .myOffBlack
 ]
 
-let scheme3Colors: [MyColor] = [
+let scheme3Colors: [FreeportColor] = [
     .mySkyBlue, .mySunshineYellow, .myOceanBlue, .mySeafoam, .myPalmGreen,
     .myCoral, .myLagoon, .myShell, .myCoconut, .myPineapple,
     .myOffWhite, .myOffBlack
 ]
 
-let scheme4Colors: [MyColor] = [
+let scheme4Colors: [FreeportColor] = [
     .myBurntOrange, .myGoldenYellow, .myCrimsonRed, .myPumpkin, .myChestnut,
     .myHarvestGold, .myAmber, .myMaroon, .myRusset, .myMossGreen,
     .myOffWhite, .myOffBlack
 ]
-let allColorSchemes: [[MyColor]] = [
+let allColorSchemes: [[FreeportColor]] = [
   scheme0Colors, scheme1Colors, scheme2Colors, scheme3Colors, scheme4Colors
 ]
-func allColorsForScheme(_ schmindx: Int) -> [MyColor] {
+func allColorsForScheme(_ schmindx: Int) -> [FreeportColor] {
   return allColorSchemes[schmindx]
 }
-func colorForSchemeAndTopic(scheme schmindx: Int, index topicIndex: Int) -> MyColor {
+func colorForSchemeAndTopic(scheme schmindx: Int, index topicIndex: Int) -> FreeportColor {
     let theScheme = allColorSchemes[schmindx]
     return theScheme[topicIndex]
 }
-func availableColorsForScheme (_ schmindx: Int) -> [MyColor] {
+func availableColorsForScheme (_ schmindx: Int) -> [FreeportColor] {
   return allColorSchemes[schmindx]
 }
 /**
@@ -281,18 +281,18 @@ func availableColorsForScheme (_ schmindx: Int) -> [MyColor] {
  - use that for topic's value
  
  */
- func reworkTopics(topics:[String:MyColor],fromscheme:Int, toscheme:Int) -> [String:MyColor] {
-   print("Reworking topics from scheme \(fromscheme) to scheme \(toscheme)")
+ func reworkColors(topics:[String:FreeportColor],fromscheme:Int, toscheme:Int) -> [String:FreeportColor] {
+   print("Reworking colors for topics  from scheme \(fromscheme) to scheme \(toscheme)")
   return topics.mapValues { mycolor  in
     //find position in "fromscheme"
     guard let  posfrom = allColorSchemes[fromscheme].firstIndex(of: mycolor) else {
       print("did not find \(mycolor) in scheme \(fromscheme)")
-      return MyColor.myHotPink}
+      return FreeportColor.myHotPink}
     
     print("found index of \(mycolor) in scheme \(fromscheme) at \(posfrom)")
     // find color in same position in "toscheme" and return it
     guard posfrom >= 0 && posfrom < allColorSchemes[toscheme].count
-    else { return MyColor.myGoldenrod
+    else { return FreeportColor.myGoldenrod
     }
     let  newColor = allColorSchemes[toscheme][posfrom]
      print("transformed to \(newColor) in scheme \(toscheme)")
